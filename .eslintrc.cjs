@@ -97,7 +97,7 @@ module.exports = {
         'no-whitespace-before-property': 'warn',
         'rest-spread-spacing': ['warn', 'never'],
         'unicode-bom': ['warn', 'never'],
-        '@typescript-eslint/no-explicit-any': 'warn',
+        '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/adjacent-overload-signatures': 'warn',
         '@typescript-eslint/consistent-generic-constructors': 'warn',
         '@typescript-eslint/consistent-type-assertions': 'warn',
