@@ -3,7 +3,7 @@ import { DB_PASSWORD } from '@/config';
 
 const pool = new Pool({
   user: 'postgres',
-  password: DB_PASSWORD,
+  password: 'dummypassword',
   host: 'localhost',
   port: 3000,
   database: 'f3a-database',
