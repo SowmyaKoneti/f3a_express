@@ -14,7 +14,7 @@ app.get('/user', (req, res) => {
   res.send({ name: 'John Doe', email: 'johndoe@gmail.com', team: 'Yellow Mosquitos' });
 });
 app.get('/rules', (req, res) => {
-  var data = fs.readFileSync('/home/tanzeel/Videos/SLU/f3a-express/src/resource/rules.txt', 'utf8');
+  var data = fs.readFileSync(process.cwd()+'/src/resource/rules.txt', 'utf8');
   let arr = new Array();
   data.split("/n").forEach(val => {
     arr.push(val)
