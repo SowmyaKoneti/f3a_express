@@ -1,3 +1,4 @@
+import fs from 'fs';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
@@ -26,5 +27,17 @@ app.post('/games', async (req, res) => {
   const result = await db.query(query, values);
   res.send(result.rows[0]);
 });
+app.get('/rules', (req, res) => {
+  const data = fs.readFileSync(`${process.cwd()}/src/resource/rules.txt`, 'utf8');
+  const arr = [];
+  data.split('/n').forEach(val => {
+    arr.push(val);
+  });
 
-if (import.meta.env.PROD) app.listen(PORT, () => console.log(`Example app listening on port ${PORT}`));
+  res.json(arr);
+});
+
+// if (import.meta.env.PROD) app.listen(PORT, () => console.log(`Example app listening on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Listening on Port ${PORT}`);
+});
