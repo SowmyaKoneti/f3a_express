@@ -27,9 +27,10 @@ app.post('/games', async (req, res) => {
   const result = await db.query(query, values);
   res.send(result.rows[0]);
 });
+
 app.get('/rules', (req, res) => {
   const data = fs.readFileSync(`${process.cwd()}/src/resource/rules.txt`, 'utf8');
-  const arr = [];
+  const arr: string[] = [];
   data.split('/n').forEach(val => {
     arr.push(val);
   });
