@@ -1,9 +1,9 @@
 import { Pool } from 'pg';
-// import { DB_PASSWORD } from '@/config';
+import { DB_PASSWORD } from '@/config';
 
 const pool = new Pool({
   user: 'postgres',
-  password: 'dummyPassword',
+  password: DB_PASSWORD,
   host: 'localhost',
   port: 3000,
   database: 'f3a-database',
