@@ -1,49 +1,147 @@
-import fs from 'fs';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
-import type { QueryResult } from 'pg';
 import { PORT } from '@/config';
-import * as db from '@/db';
+import Player from '@/models/Player'; // Import the Player model
+import AvailabilityData from '@/models/models';
 
 export const app = express();
 
 app.use(cors());
-
-app.use(helmet({ crossOriginResourcePolicy: false }));
-
+app.use(helmet());
 app.use(express.json());
 
-app.get('/:team_id/games', async (req, res) => {
-  const team_id = req.params.team_id.replace(/\D/g, '');
-  const result: QueryResult = await db.query(
-    `SELECT * FROM games WHERE team_1_id = ${team_id} OR team_2_id = ${team_id};`
-  );
-  res.send(result.rows);
+app.get('/api/availability/:teamName', async (req, res) => {
+  const teamName = req.params.teamName;
+  try {
+    const availabilityData = await AvailabilityData.findAll({
+      where: { teamName },
+    });
+
+    res.status(200).json(availabilityData);
+  } catch (error) {
+    console.error('Error fetching availability data:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-app.get('/games', async (req, res) => {
-  const result: QueryResult = await db.query('SELECT * FROM games;');
+app.post('/api/availability/update-availability', async (req, res) => {
+  try {
+    const { playerName, matchDay, availability } = req.body;
 
-  res.send(result.rows);
+    const [updatedRowsCount] = await AvailabilityData.update(
+      { availability },
+      {
+        where: { playerName, matchDay },
+      }
+    );
+
+    if (updatedRowsCount === 1) {
+      return res.status(200).json({ message: 'Availability updated successfully' });
+    }
+
+    return res.status(404).json({ error: 'Player or match day not found' });
+  } catch (error) {
+    console.error('Error updating availability:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 });
+app.get('/api/players', async (req, res) => {
+  try {
+    // Fetch a list of players from your database or data source
+    const players = await Player.findAll(); // Adjust this based on your data model
 
-app.post('/games', async (req, res) => {
-  const { team1Name, team2Name, team1Score, team2Score } = req.body;
-  const query =
-    'INSERT INTO games (team_1_id, team_2_id, team_1_score, team_2_score) VALUES ($1, $2, $3, $4) RETURNING *';
-  const values = [team1Name, team2Name, team1Score, team2Score];
-  const result = await db.query(query, values);
-  res.send(result.rows[0]);
+    res.status(200).json(players);
+  } catch (error) {
+    console.error('Error fetching players:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
+app.post('/api/players', async (req, res) => {
+  try {
+    const { name, team } = req.body;
 
-app.get('/rules', (req, res) => {
-  const data = fs.readFileSync(`${process.cwd()}/src/resource/rules.txt`, 'utf8');
+    const player = await Player.create({
+      name,
+      team,
+    });
 
-  res.json(data.split('/n'));
+    if (player) {
+      return res.status(200).json({ message: 'New player created successfully' });
+    }
+
+    return res.status(500).json({ error: 'Failed to create a new player' });
+  } catch (error) {
+    console.error('Error creating a new player:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 });
+app.post('/api/availability/add-member', async (req, res) => {
+  try {
+    const { playerName, matchDay, availability, teamName } = req.body;
 
-// if (import.meta.env.PROD) app.listen(PORT, () => console.log(`Example app listening on port ${PORT}`));
-app.listen(PORT, () => {
-  console.log(`Listening on Port ${PORT}`);
+    // Assuming you have an 'AvailabilityData' model for availability data
+    const newMember = await AvailabilityData.create({
+      playerName,
+      matchDay,
+      availability,
+      teamName,
+    });
+
+    if (newMember) {
+      return res.status(200).json({ message: 'New member added successfully' });
+    }
+
+    return res.status(500).json({ error: 'Failed to add a new member' });
+  } catch (error) {
+    console.error('Error adding a new member:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 });
+app.delete('/api/players', async (req, res) => {
+  try {
+    const { playerName, team } = req.body;
+
+    // Delete the player from the 'Player' table
+    const deletedPlayer = await Player.destroy({
+      where: { name: playerName, team },
+    });
+
+    if (deletedPlayer) {
+      return res.status(200).json({ message: 'Player deleted successfully' });
+    }
+
+    return res.status(404).json({ error: 'Player not found' });
+  } catch (error) {
+    console.error('Error deleting player:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+app.delete('/api/availability/delete-member', async (req, res) => {
+  try {
+    const { playerName, matchDay, teamName } = req.body;
+
+    // Delete the member from the 'AvailabilityData' table
+    const deletedMember = await AvailabilityData.destroy({
+      where: { playerName, matchDay, teamName },
+    });
+
+    if (deletedMember) {
+      return res.status(200).json({ message: 'Member deleted successfully' });
+    }
+
+    return res.status(404).json({ error: 'Member not found' });
+  } catch (error) {
+    console.error('Error deleting member:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+if (process.env.NODE_ENV === 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+} else {
+  app.listen(3000, () => {
+    console.log('Server is running on port 3000');
+  });
+}

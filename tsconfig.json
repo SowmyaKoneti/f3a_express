@@ -25,5 +25,6 @@
     /* Path Aliases */
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["src"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "vite.config.ts"],
+  "exclude": ["node_modules"]
 }
