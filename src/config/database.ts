@@ -2,8 +2,8 @@
 
 import { Sequelize } from 'sequelize';
 
-const sequelize = new Sequelize('sql9653877', 'sql9653877', 'UzcvWtMePv', {
-  host: 'sql9.freesqldatabase.com', // Replace with your database host
+const sequelize = new Sequelize('F3A', 'dynamiccoders', 'dynamiccoders', {
+  host: '35.192.205.195', // Replace with your database host
   dialect: 'mysql', // Replace with your database dialect (e.g., mysql, postgres, sqlite)
   logging: false, // Set to true to enable SQL query logging
 });
